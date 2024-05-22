@@ -1,0 +1,309 @@
+@Override
+	public boolean addCourse(Course course) {
+		EntityTransaction trans = entityManager.getTransaction();
+		try {
+			trans.begin();
+			entityManager.persist(course);
+			trans.commit();
+			return true;
+		} catch (Exception e) {
+			if (trans.isActive()) {
+				trans.rollback();
+			}
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@Override
+	public boolean updateCourse(Course course) {
+		EntityTransaction trans = entityManager.getTransaction();
+		try {
+			trans.begin();
+			entityManager.merge(course);
+			trans.commit();
+			return true;
+		} catch (Exception e) {
+			if (trans.isActive()) {
+				trans.rollback();
+			}
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@Override
+	public boolean deleteCourse(int id) {
+		EntityTransaction trans = entityManager.getTransaction();
+		try {
+			trans.begin();
+			Course course = entityManager.find(Course.class, id);
+			entityManager.remove(course);
+			trans.commit();
+			return true;
+		} catch (Exception e) {
+			if (trans.isActive()) {
+				trans.rollback();
+			}
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@Override
+	public Course findCourseByID(int id) {
+		return entityManager.find(Course.class, id);
+	}
+
+	@Override
+	public Course findCourseByTitle(String title) {
+		return entityManager.createQuery("SELECT c FROM Course c WHERE c.title = :title", Course.class)
+				.setParameter("title", title)
+				.getSingleResult();
+		
+//		return entityManager.createQuery("SELECT c FROM Course c WHERE c.title = :title", Course.class)
+//				.setParameter("title", title)
+//				.getResultList()
+//				.stream()
+//				.findFirst()
+//				.orElse(null);
+	}
+
+	@Override
+	public List<Course> findCourseByTitleLike(String title) {
+		return entityManager.createNamedQuery("Course.findByTitleLike", Course.class)
+				.setParameter("title", "%" + title + "%")
+				.getResultList();
+	}
+
+	@Override
+	public List<Course> findAll() {
+		return entityManager.createNamedQuery("Course.findAll", Course.class).getResultList();
+	}
+
+	@Override
+	public List<OnsiteCourse> findAllOnsiteCourses() {
+		return entityManager.createNamedQuery("Course.findOnsiteCourses", OnsiteCourse.class).getResultList();
+	}
+
+// A.Liệt kê danh sách các vị trí công việc khi biết tên vị trí (tìm tương đối)
+	// và
+	// mức lương khoảng từ,
+	// kết quả sắp xếp theo tên vị trí công việc.
+	@Override
+	public List<Position> listPositions(String name, double salaryFrom, double salaryTo) {
+		List<Position> positions = new ArrayList<Position>();
+		try {
+			TypedQuery<Position> query = entityManager.createQuery(
+					"SELECT p FROM Position p WHERE p.name LIKE :name AND p.salary BETWEEN :salaryFrom AND :salaryTo ORDER BY p.name",
+					Position.class);
+			query.setParameter("name", "%" + name + "%");
+			query.setParameter("salaryFrom", salaryFrom);
+			query.setParameter("salaryTo", salaryTo);
+			return positions = query.getResultList();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return positions;
+	}
+
+	// B.Liệt kê danh sách các ứng viên và số công ty mà các ứng viên này từng làm.
+	@Override
+	public Map<Candidate, Long> listCadidatesByCompanies() {
+		try {
+			Query query = entityManager.createQuery(
+					"SELECT c, COUNT(cc.id) FROM Candidate c JOIN Experience cc ON c.id = cc.candidate.id GROUP BY c.id");
+			List<Object[]> results = query.getResultList();
+
+			Map<Candidate, Long> map = new HashMap<>();
+			for (Object[] result : results) {
+				Candidate candidate = (Candidate) result[0];
+				Long count = (Long) result[1];
+				map.put(candidate, count);
+			}
+			return map;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	// C.Tìm danh sách các ứng viên đã làm việc trên một vị trí công việc nào đó có
+	// thời gian làm lâu nhất.
+	public Map<Candidate, Position> listCandidatesWithLongestWorking() {
+		try {
+			Query query = entityManager.createQuery(
+					"SELECT e.candidate, e.position, MAX(DATEDIFF(e.to_date, e.from_date)) FROM Experience e GROUP BY e.position.id");
+			List<Object[]> results = query.getResultList();
+
+			Map<Candidate, Position> map = new HashMap<>();
+			for (Object[] result : results) {
+				Candidate candidate = (Candidate) result[0];
+				Position position = (Position) result[1];
+				map.put(candidate, position);
+			}
+			return map;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	// D. Thêm một ứng viên mới. Trong đó mã số ứng viên phải bắt đầu là C, theo sau
+	// ít nhất là 3 ký số.
+	public boolean addCandidate(Candidate candidate) {
+		if (!candidate.getId().matches("^C\\d{3,}$")) {
+			System.out.println("Mã số ứng viên phải bắt đầu là C, theo sau ít nhất là 3 ký số.");
+			return false;
+		}
+
+		EntityTransaction trans = entityManager.getTransaction();
+		try {
+			trans.begin();
+			entityManager.persist(candidate);
+			trans.commit();
+			return true;
+		} catch (Exception e) {
+			if (trans.isActive()) {
+				trans.rollback();
+			}
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	// E. Tính số năm làm việc trên một vị trí công việc nào đó khi biết mã số ứng
+	// viên.
+	public Map<Position, Integer> listYearsOfExperienceByPosition(String candidate_id) {
+		try {
+			Query query = entityManager.createQuery(
+					"SELECT e.position, SUM(DATEDIFF(e.to_date, e.from_date) / 365.0) FROM Experience e WHERE e.candidate.id = :candidate_id GROUP BY e.position.id");
+			List<Object[]> results = query.setParameter("candidate_id", candidate_id).getResultList();
+
+			Map<Position, Integer> map = new HashMap<>();
+			for (Object[] result : results) {
+				Position position = (Position) result[0];
+				Double years = (Double) result[1];
+				map.put(position, years.intValue());
+			}
+			return map;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	// F.Liệt kê danh sách các ứng viên và danh sách bằng cấp của từng ứng viên.
+	public Map<Candidate, Set<Certificate>> listCandidatesAndCertificates() {
+		TypedQuery<Candidate> query = entityManager.createQuery("SELECT c FROM Candidate c JOIN FETCH c.certificate",
+				Candidate.class);
+
+		List<Candidate> candidates = query.getResultList();
+		Map<Candidate, Set<Certificate>> result = new HashMap<>();
+
+		for (Candidate candidate : candidates) {
+			result.put(candidate, candidate.getCertificate());
+		}
+
+		return result;
+	}
+
+///////
+
+// A. Liệt kê danh sách các cuốn sách được viết bởi tác giả nào đó khi biết tên
+	// tác giả và
+	// có điểm đánh giá từ mấy sao trở lên.
+	@Override
+	public List<Book> listRatedBooks(String authorName, int rating) {
+		List<Book> books = new ArrayList<Book>();
+		try {
+			TypedQuery<Book> query = entityManager.createQuery(
+					"SELECT DISTINCT b FROM Book b JOIN b.authors a JOIN b.review r  WHERE a = :author AND r.rating >= :rating",
+					Book.class);
+			query.setParameter("author", authorName);
+			query.setParameter("rating", rating);
+
+			return books = query.getResultList();
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return books;
+	}
+
+	// B. Thống kê số cuốn sách được dịch sang ngôn ngữ khác của từng tác giả, kết
+	// quả sắp
+	// xếp theo tên tác giả.
+	public Map<String, Long> countBooksByAuthor() {
+		String jpql = "SELECT a, COUNT(bt) FROM Book b JOIN b.authors a JOIN b.bookTranslation bt GROUP BY a ORDER BY a";
+		TypedQuery<Object[]> query = entityManager.createQuery(jpql, Object[].class);
+		List<Object[]> results = query.getResultList();
+
+		Map<String, Long> countMap = new HashMap<>();
+		for (Object[] result : results) {
+			String author = (String) result[0];
+			Long count = (Long) result[1];
+			countMap.put(author, count);
+		}
+		return countMap;
+	}
+
+	// C. Cập nhật thêm một lượt đánh giá cho một cuốn sách, cập nhật thành công nếu
+	// cuốn
+	// sách và người đọc đã tồn tại, rating phải từ 1 đến 5 và bình luận không được
+	// để trống hay rỗng.
+	@Override
+	public boolean updateReviews(String isbn, String readerID, int rating, String comment) {
+		if (rating < 1 || rating > 5 || comment == null || comment.trim().isEmpty()) {
+			return false;
+		}
+
+		EntityTransaction trans = entityManager.getTransaction();
+		try {
+			trans.begin();
+
+			// Kiểm tra sự tồn tại của cuốn sách
+			Book book = entityManager.find(Book.class, isbn);
+			if (book == null) {
+				return false;
+			}
+
+			// Kiểm tra sự tồn tại của người đọc (giả sử bạn có thực thể Person và bảng
+			// tương ứng)
+			Person person = entityManager.find(Person.class, readerID);
+			if (person == null) {
+				return false;
+			}
+
+			// Kiểm tra sự tồn tại của review
+			TypedQuery<Reviews> query = entityManager.createQuery(
+					"SELECT r FROM Reviews r WHERE r.book.ISBN = :isbn AND r.person.id = :readerID", Reviews.class);
+			query.setParameter("ISBN", isbn);
+			query.setParameter("person_id", readerID);
+
+			Reviews review;
+			List<Reviews> results = query.getResultList();
+			if (results.isEmpty()) {
+				// Tạo mới review nếu chưa tồn tại
+				review = new Reviews();
+				review.setBook(book);
+				review.setPerson(person);
+				;
+			} else {
+				// Cập nhật review nếu đã tồn tại
+				review = results.get(0);
+			}
+
+			review.setRating(rating);
+			review.setComment(comment);
+			entityManager.persist(review);
+
+			trans.commit();
+			return true;
+		} catch (Exception e) {
+			if (trans.isActive()) {
+				trans.rollback();
+			}
+			e.printStackTrace();
+			return false;
+		}
+	}
