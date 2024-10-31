@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trang Flower</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+      .header-image {
+        max-height: 200px;
+        width: 100%;
+        object-fit: cover;
+      }
+      .nav-link {
+        color: #198754;
+        font-weight: 500;
+      }
+      .nav-link:hover {
+        color: #0d6e42;
+      }
+      .table-container {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .footer-line {
+        border-top: 1px dashed #000;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <div class="container py-4">
+      <div class="mb-4">
+        <img src="/api/placeholder/1200/200" alt="Trang Flower Header" class="header-image rounded" />
+      </div>
+
+      <nav class="nav nav-pills nav-fill mb-4 bg-white p-2 rounded">
+        <a class="nav-link" href="#">TRANG CHỦ</a>
+        <a class="nav-link" href="#" id="orderButton">ĐẶT MUA HOA</a>
+        <a class="nav-link" href="#">CÂY XANH VĂN PHÒNG</a>
+        <a class="nav-link" href="#">TIN TỨC</a>
+      </nav>
+
+      <div class="table-container p-4">
+        <h4 class="text-center mb-4">DANH SÁCH THÔNG TIN ĐẶT HÀNG NHANH</h4>
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>HỌ VÀ TÊN</th>
+                <th>SỐ ĐIỆN THOẠI</th>
+                <th>NGÀY ĐẶT</th>
+                <th>EMAIL CỦA BẠN</th>
+                <th>LOẠI HOA</th>
+                <th>LOẠI THANH TOÁN</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Nguyen Luong</td>
+                <td>0902.128.350</td>
+                <td>2023-11-08</td>
+                <td>nguyenluong.123@iuh.edu.vn</td>
+                <td>Hoa Hồng Vàng</td>
+                <td>CHUYỂN KHOẢN</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4">
+          <div class="footer-line"></div>
+          <div class="text-center">Hết</div>
+          <div class="footer-line"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="orderModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">THÔNG TIN ĐẶT HÀNG NHANH</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="orderForm" class="needs-validation" novalidate>
+              <div class="mb-3">
+                <label for="fullName" class="form-label">Họ Và Tên:</label>
+                <input type="text" class="form-control" id="fullName" required />
+                <div class="invalid-feedback">Vui lòng nhập họ tên (ít nhất 2 từ, viết hoa chữ cái đầu)</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="phone" class="form-label">Số Điện Thoại:</label>
+                <input type="text" class="form-control" id="phone" required />
+                <div class="invalid-feedback">Vui lòng nhập số điện thoại hợp lệ (0XXX.XXX.XXX)</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="orderDate" class="form-label">Ngày Đặt:</label>
+                <input type="date" class="form-control" id="orderDate" required />
+                <div class="invalid-feedback">Ngày đặt phải sau ngày hiện tại</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" class="form-control" id="email" required />
+                <div class="invalid-feedback">Email phải theo định dạng name_email@iuh.edu.vn</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="flowerType" class="form-label">Chọn Loại Hoa:</label>
+                <select class="form-select" id="flowerType" required>
+                  <option value="">Chọn loại hoa</option>
+                  <option value="hong-nhung">Hoa Hồng Nhung</option>
+                  <option value="hong-vang">Hoa Hồng Vàng</option>
+                  <option value="hong-trang">Hoa Hồng Trắng</option>
+                  <option value="lan">Hoa Lan</option>
+                  <option value="nhieu-loai">Hoa Nhiều Loại</option>
+                </select>
+                <div class="invalid-feedback">Vui lòng chọn loại hoa</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Loại Thanh Toán:</label>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="paymentType"
+                    id="cashPayment"
+                    value="cash"
+                    required
+                  />
+                  <label class="form-check-label" for="cashPayment"> Tiền Mặt </label>
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="paymentType"
+                    id="transferPayment"
+                    value="transfer"
+                    required
+                  />
+                  <label class="form-check-label" for="transferPayment"> Chuyển Khoản </label>
+                </div>
+                <div class="invalid-feedback">Vui lòng chọn phương thức thanh toán</div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="button" class="btn btn-primary" id="submitOrder">Đặt Hàng</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $("#orderButton").click(function (e) {
+          e.preventDefault();
+          $("#orderModal").modal("show");
+        });
+
+        $("#submitOrder").click(function () {
+          if (validateForm()) {
+            const newRow = `
+                        <tr>
+                            <td>${$("tbody tr").length + 1}</td>
+                            <td>${$("#fullName").val()}</td>
+                            <td>${$("#phone").val()}</td>
+                            <td>${$("#orderDate").val()}</td>
+                            <td>${$("#email").val()}</td>
+                            <td>${$("#flowerType option:selected").text()}</td>
+                            <td>${
+                              $('input[name="paymentType"]:checked').val() === "cash" ? "TIỀN MẶT" : "CHUYỂN KHOẢN"
+                            }</td>
+                        </tr>
+                    `;
+            $("tbody").append(newRow);
+
+            $("#orderForm")[0].reset();
+            $("#orderModal").modal("hide");
+
+            alert("Đơn hàng đã được gửi thành công!");
+          }
+        });
+
+        function validateForm() {
+          let isValid = true;
+
+          const fullName = $("#fullName").val().trim();
+          const namePattern =
+            /^([A-ZÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ][a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]+)( [A-ZÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ][a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]*)+$/u;
+
+          if (!namePattern.test(fullName)) {
+            $("#fullName").addClass("is-invalid");
+            isValid = false;
+          } else {
+            $("#fullName").removeClass("is-invalid");
+            isValid = true;
+          }
+
+          const phone = $("#phone").val().trim();
+          const phonePattern = /^0\d{3}\.?\d{3}\.?\d{3}$/;
+          if (!phonePattern.test(phone)) {
+            $("#phone").addClass("is-invalid");
+            isValid = false;
+          } else {
+            $("#phone").removeClass("is-invalid");
+          }
+
+          const orderDate = new Date($("#orderDate").val());
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          if (orderDate <= today) {
+            $("#orderDate").addClass("is-invalid");
+            isValid = false;
+          } else {
+            $("#orderDate").removeClass("is-invalid");
+          }
+
+          const email = $("#email").val().trim();
+          const emailPattern = /^[a-zA-Z0-9_]{3,}@iuh\.edu\.vn$/;
+          if (!emailPattern.test(email)) {
+            $("#email").addClass("is-invalid");
+            isValid = false;
+          } else {
+            $("#email").removeClass("is-invalid");
+          }
+
+          if (!$("#flowerType").val()) {
+            $("#flowerType").addClass("is-invalid");
+            isValid = false;
+          } else {
+            $("#flowerType").removeClass("is-invalid");
+          }
+
+          if (!$('input[name="paymentType"]:checked').val()) {
+            $('input[name="paymentType"]').addClass("is-invalid");
+            isValid = false;
+          } else {
+            $('input[name="paymentType"]').removeClass("is-invalid");
+          }
+
+          return isValid;
+        }
+
+        $("#fullName, #phone, #orderDate, #email, #flowerType").on("input change", function () {
+          if ($(this).val()) {
+            $(this).removeClass("is-invalid");
+          }
+        });
+
+        $('input[name="paymentType"]').on("change", function () {
+          $('input[name="paymentType"]').removeClass("is-invalid");
+        });
+      });
+    </script>
+  </body>
+</html>
